@@ -9,6 +9,7 @@ import {
   Globe,
   ChevronRight,
   LogOut,
+  Wallet,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ import {
 // Local components
 import AssetsDialog from "./AssetsDialog";
 import DepositDialog from "./DepositDialog"; // <-- Make sure this import path is correct
+import SwapDialog from "./SwapDialog";
 
 export default function Demo() {
   // States
@@ -43,6 +45,7 @@ export default function Demo() {
   const [userInfo, setUserInfo] = useState<any>(null);
   const [showAssetsDialog, setShowAssetsDialog] = useState(false);
   const [showDepositDialog, setShowDepositDialog] = useState(false);
+  const [showSwapDialog, setShowSwapDialog] = useState(false);
   const [accountInfo, setAccountInfo] = useState<{
     ownerAddress: string;
     evmUaAddress: string;
@@ -112,7 +115,21 @@ export default function Demo() {
 
   return (
     <div className="flex-1 flex flex-col">
-      {/* Header */}
+      <div className="flex flex-col items-center text-center space-y-3">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-purple-700 flex items-center justify-center shadow-md">
+          <Wallet className="w-6 h-6 text-white" />
+        </div>
+
+        {/* Title and Description */}
+        <div className="max-w-xs">
+          <h1 className="text-xl font-semibold text-gray-900">
+            Universal Accounts Demo
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Experience cross-chain functionality without bridging.
+          </p>
+        </div>
+      </div>
       <div className="flex items-center justify-between p-6">
         <Dialog>
           <DialogTrigger asChild>
@@ -248,6 +265,8 @@ export default function Demo() {
         <Button
           className="w-full h-14 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-lg rounded-xl flex items-center justify-center gap-3 shadow-lg transition-all duration-200"
           size="lg"
+          onClick={() => setShowSwapDialog(true)}
+          disabled={!accountInfo}
         >
           <RefreshCw className="w-5 h-5" />
           Swap
@@ -268,6 +287,12 @@ export default function Demo() {
           solanaAddress={accountInfo.solanaUaAddress}
         />
       )}
+      <SwapDialog
+        showSwapDialog={showSwapDialog}
+        setShowSwapDialog={setShowSwapDialog}
+        primaryBalanceUsd={primaryAssets?.totalAmountInUSD ?? 0.0}
+        universalAccount={universalAccount}
+      />
     </div>
   );
 }

@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowDownToLine, Copy, Network } from "lucide-react";
 import { useState } from "react";
+import { supportedChains } from "@/lib/chains";
 
 const truncateAddress = (address: string, chars = 6) => {
   if (!address) return "";
@@ -21,61 +22,6 @@ interface DepositDialogProps {
   evmAddress: string;
   solanaAddress: string;
 }
-
-const supportedChains = [
-  {
-    name: "Solana",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fsolana%2Ficons%2F101.png&w=32&q=75",
-  },
-  {
-    name: "Ethereum",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F1.png&w=32&q=75",
-  },
-  {
-    name: "BNB Chain",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F56.png&w=32&q=75",
-  },
-  {
-    name: "Base",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F8453.png&w=32&q=75",
-  },
-  {
-    name: "Arbitrum",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F42161.png&w=32&q=75",
-  },
-  {
-    name: "Avalanche",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F43114.png&w=32&q=75",
-  },
-  {
-    name: "OP",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F10.png&w=32&q=75",
-  },
-  {
-    name: "Polygon",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F137.png&w=32&q=75",
-  },
-  {
-    name: "HyperEVM",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F999.png&w=32&q=75",
-  },
-  {
-    name: "Berachain",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F80094.png&w=32&q=75",
-  },
-  {
-    name: "Linea",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F59144.png&w=32&q=75",
-  },
-  {
-    name: "Sonic",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F146.png&w=32&q=75",
-  },
-  {
-    name: "Merlin",
-    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F4200.png&w=32&q=75",
-  },
-];
 
 export default function DepositDialog({
   showDepositDialog,
