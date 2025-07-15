@@ -4,7 +4,7 @@ import "./globals.css";
 
 // Import the ConnectKitProvider configuration (exported as ParticleConnectKit)
 import { ParticleConnectkit } from "../components/Connectkit";
-
+import { Toaster } from "@/components/ui/toaster";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -21,6 +21,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <ParticleConnectkit>{children}</ParticleConnectkit>
+        <Toaster />
       </body>
     </html>
   );

@@ -10,6 +10,7 @@ import {
   ChevronRight,
   LogOut,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -19,7 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
 import {
   useDisconnect,
   useParticleAuth,
@@ -27,20 +27,29 @@ import {
   useAccount,
 } from "@particle-network/connectkit";
 
-// UA imports
+// UA SDK
 import {
   UniversalAccount,
   IAssetsResponse,
 } from "@particle-network/universal-account-sdk";
+
+// Local components
 import AssetsDialog from "./AssetsDialog";
+import DepositDialog from "./DepositDialog"; // <-- Make sure this import path is correct
 
 export default function Demo() {
   // States
   const [showBalance, setShowBalance] = useState(true);
   const [userInfo, setUserInfo] = useState<any>(null);
   const [showAssetsDialog, setShowAssetsDialog] = useState(false);
+  const [showDepositDialog, setShowDepositDialog] = useState(false);
+  const [accountInfo, setAccountInfo] = useState<{
+    ownerAddress: string;
+    evmUaAddress: string;
+    solanaUaAddress: string;
+  } | null>(null);
 
-  // Connectkit states
+  // ConnectKit states
   const { disconnect } = useDisconnect();
   const { getUserInfo } = useParticleAuth();
   const [primaryWallet] = useWallets();
@@ -53,36 +62,41 @@ export default function Demo() {
     null
   );
 
-  const handleAssetsClick = () => {
-    setShowAssetsDialog(true);
-  };
+  // Instantiate UA
   useEffect(() => {
     if (!isConnected || !address) return;
     const ua = new UniversalAccount({
-      projectId: process.env.NEXT_PUBLIC_UA_PROJECT_ID!, // Replace with your actual key
-      ownerAddress: address!, // The user’s EOA address
+      projectId: process.env.NEXT_PUBLIC_UA_PROJECT_ID!,
+      ownerAddress: address!,
       tradeConfig: {
-        slippageBps: 100, // Optional: 100 = 1% slippage tolerance
-        universalGas: true, // Optional: let user pay gas in PARTI token
+        slippageBps: 100,
+        universalGas: true,
       },
     });
     setUniversalAccount(ua);
   }, [isConnected, address]);
 
+  // Fetch user and asset data
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (!isConnected || !address || !universalAccount) return;
 
-      // Avoid re-fetch if nothing changed
       if (primaryWallet?.connector?.walletConnectorType === "particleAuth") {
-        const userInfo = await getUserInfo(); // ensure it's awaited
+        const userInfo = await getUserInfo();
         setUserInfo(userInfo);
       }
 
       const primaryAssets = await universalAccount.getPrimaryAssets();
-      console.log(JSON.stringify(primaryAssets, null, 2));
-
       setPrimaryAssets(primaryAssets);
+
+      const smartAccountOptions =
+        await universalAccount.getSmartAccountOptions();
+      const accountInfo = {
+        ownerAddress: smartAccountOptions.ownerAddress,
+        evmUaAddress: smartAccountOptions.smartAccountAddress!,
+        solanaUaAddress: smartAccountOptions.solanaSmartAccountAddress!,
+      };
+      setAccountInfo(accountInfo);
     };
 
     fetchUserInfo();
@@ -143,7 +157,7 @@ export default function Demo() {
         </Dialog>
       </div>
 
-      {/* Balance Section */}
+      {/* Balance */}
       <div className="px-6 mt-4">
         <Card className="bg-gradient-to-br from-purple-600 to-purple-700 border-0 rounded-2xl shadow-lg">
           <CardContent className="p-8">
@@ -166,12 +180,10 @@ export default function Demo() {
                 </Button>
               </div>
 
-              <div className="space-y-3">
-                <div className="text-4xl font-bold tracking-tight text-white">
-                  {showBalance
-                    ? primaryAssets?.totalAmountInUSD.toFixed(3)
-                    : "••••••"}
-                </div>
+              <div className="text-4xl font-bold tracking-tight text-white">
+                {showBalance
+                  ? primaryAssets?.totalAmountInUSD.toFixed(3)
+                  : "••••••"}
               </div>
             </div>
           </CardContent>
@@ -182,7 +194,7 @@ export default function Demo() {
       <div className="flex-1 px-6 mt-8 space-y-6">
         <Card
           className="bg-white border border-gray-200 rounded-xl shadow-sm cursor-pointer hover:shadow-md hover:bg-gray-50 active:scale-[0.98] transition-all duration-200"
-          onClick={handleAssetsClick}
+          onClick={() => setShowAssetsDialog(true)}
         >
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -224,6 +236,8 @@ export default function Demo() {
       {/* Bottom Actions */}
       <div className="p-6 pb-8 space-y-3 bg-gradient-to-t from-gray-50 via-gray-50/95 to-transparent">
         <Button
+          onClick={() => setShowDepositDialog(true)}
+          disabled={!accountInfo}
           className="w-full h-14 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white font-semibold text-lg rounded-xl flex items-center justify-center gap-3 shadow-lg transition-all duration-200"
           size="lg"
         >
@@ -239,13 +253,21 @@ export default function Demo() {
           Swap
         </Button>
       </div>
-      <div>
-        <AssetsDialog
-          showAssetsDialog={showAssetsDialog}
-          setShowAssetsDialog={setShowAssetsDialog}
-          primaryAssets={primaryAssets!}
+
+      {/* Dialogs */}
+      <AssetsDialog
+        showAssetsDialog={showAssetsDialog}
+        setShowAssetsDialog={setShowAssetsDialog}
+        primaryAssets={primaryAssets!}
+      />
+      {accountInfo && (
+        <DepositDialog
+          showDepositDialog={showDepositDialog}
+          setShowDepositDialog={setShowDepositDialog}
+          evmAddress={accountInfo.evmUaAddress}
+          solanaAddress={accountInfo.solanaUaAddress}
         />
-      </div>
+      )}
     </div>
   );
 }

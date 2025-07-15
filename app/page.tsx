@@ -102,16 +102,15 @@ function Loading() {
 // Page
 export default function Page() {
   const { status } = useAccount();
-
-  const isConnected = status === 'connected';
+  const isConnected = status === "connected";
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
       <Header isConnected={isConnected} />
       <div className="flex-1 flex flex-col">
-        {(status === 'connecting' || status === 'reconnecting') && <Loading />}
-        {status === 'connected' && <Demo />}
-        {status === 'disconnected' && <Hero />}
+        {(status === "connecting" || status === "reconnecting") && <Loading />}
+        {status === "connected" && <Demo />}
+        {status === "disconnected" && <Hero />}
       </div>
     </div>
   );
