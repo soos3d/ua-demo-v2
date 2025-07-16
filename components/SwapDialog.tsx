@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { RefreshCw } from "lucide-react";
 import { UniversalAccount } from "@particle-network/universal-account-sdk";
-import { type Token, dummyTokens } from "../lib/tokens";
+import { type Token } from "../lib/tokens";
 import TokenSelectionView from "./token-selection-view";
 import TokenSwapInputView from "./token-swap-input-view";
 
@@ -27,6 +27,32 @@ export default function SwapDialog({
 }: SwapDialogProps) {
   console.log(primaryBalanceUsd);
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
+  const [tokens, setTokens] = useState<Token[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (showSwapDialog) {
+      const fetchTokens = async () => {
+        setIsLoading(true);
+        try {
+          const response = await fetch("/api/tokens");
+          if (!response.ok) {
+            throw new Error("Failed to fetch tokens");
+          }
+          const data = await response.json();
+          console.log("data", data);
+          setTokens(data);
+        } catch (error) {
+          console.error(error);
+          // Optionally, set some error state to show in the UI
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchTokens();
+    }
+  }, [showSwapDialog]);
 
   const handleClose = () => {
     setShowSwapDialog(false);
@@ -58,8 +84,9 @@ export default function SwapDialog({
           />
         ) : (
           <TokenSelectionView
-            tokens={dummyTokens}
+            tokens={tokens}
             onSelectToken={setSelectedToken}
+            isLoading={isLoading}
           />
         )}
       </DialogContent>

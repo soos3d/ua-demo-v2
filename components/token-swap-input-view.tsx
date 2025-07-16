@@ -34,12 +34,16 @@ export default function TokenSwapInputView({
 }: TokenSwapInputViewProps) {
   const [usdAmount, setUsdAmount] = useState<string>("");
   const [isSwapping, setIsSwapping] = useState(false);
-  const [currentPrice, setCurrentPrice] = useState<number>(
-    token.currentPriceUsd
-  );
-  const [isPriceLoading, setIsPriceLoading] = useState(true);
+
+  const availableChains =
+    token.symbol === "USDC"
+      ? supportedChains.filter(
+          (chain) => chain.name !== "HyperEVM" && chain.name !== "Merlin"
+        )
+      : supportedChains;
+
   const [destinationChain, setDestinationChain] = useState<string>(
-    supportedChains[0]?.id || ""
+    availableChains[0]?.id || ""
   );
   console.log("token", token);
   console.log("usdAmount", usdAmount);
@@ -48,58 +52,8 @@ export default function TokenSwapInputView({
   const walletClient = primaryWallet?.getWalletClient();
   const { address } = useAccount();
 
-  useEffect(() => {
-    const fetchPrice = async () => {
-      setIsPriceLoading(true);
-
-      // Map token ID to blockchain name for the API
-      const getBlockchainFromTokenId = (id: string) => {
-        switch (id) {
-          case "sol":
-            return "Solana";
-          case "eth":
-            return "Ethereum";
-          case "usdc":
-            return "Ethereum";
-          case "usdt":
-            return "Ethereum";
-          case "btc":
-            return "Bitcoin";
-          default:
-            return null;
-        }
-      };
-
-      const blockchain = getBlockchainFromTokenId(token.id);
-
-      if (!blockchain) {
-        setCurrentPrice(token.currentPriceUsd); // Fallback to dummy price
-        setIsPriceLoading(false);
-        return;
-      }
-
-      try {
-        const response = await fetch(
-          `https://api.diadata.org/v1/assetQuotation/${blockchain}/0x0000000000000000000000000000000000000000`
-        );
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        setCurrentPrice(data.Price);
-      } catch (error) {
-        console.error("Failed to fetch price:", error);
-        setCurrentPrice(token.currentPriceUsd); // Fallback to dummy price on error
-      } finally {
-        setIsPriceLoading(false);
-      }
-    };
-
-    fetchPrice();
-  }, [token.id, token.currentPriceUsd]);
-
   const tokenAmount = usdAmount
-    ? (Number.parseFloat(usdAmount) / currentPrice).toFixed(4)
+    ? (Number.parseFloat(usdAmount) / token.currentPriceUsd).toFixed(4)
     : "0.0000";
   console.log("tokenAmount", tokenAmount);
   const handleSwap = async () => {
@@ -194,14 +148,8 @@ export default function TokenSwapInputView({
         <div className="flex items-center justify-between">
           <p className="text-sm text-gray-600">Current Price</p>
           <div className="flex items-center gap-1 text-base font-bold text-gray-900">
-            {isPriceLoading ? (
-              <span className="text-gray-500">Loading...</span>
-            ) : (
-              <>
-                <DollarSign className="w-3 h-3 text-green-600" />
-                {currentPrice.toFixed(2)} USD
-              </>
-            )}
+            <DollarSign className="w-3 h-3 text-green-600" />
+            {token.currentPriceUsd.toFixed(2)} USD
           </div>
         </div>
         <div className="flex items-center justify-between">
@@ -225,7 +173,7 @@ export default function TokenSwapInputView({
             <SelectValue placeholder="Select a chain" />
           </SelectTrigger>
           <SelectContent>
-            {supportedChains.map((chain) => (
+            {availableChains.map((chain) => (
               <SelectItem key={chain.id} value={chain.id}>
                 <div className="flex items-center gap-2">
                   <img

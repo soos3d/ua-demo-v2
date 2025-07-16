@@ -60,7 +60,7 @@ export interface Chain {
     {
       name: "HyperEVM",
       icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fchains%2Fevm%2Ficons%2F999.png&w=32&q=75",
-      id: "hyper-vm",
+      id: "hyper-evm",
       chainId: 999 as CHAIN_ID
     },
     {
