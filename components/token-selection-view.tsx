@@ -1,7 +1,6 @@
 "use client";
 
-import { DollarSign, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { DollarSign } from "lucide-react";
 import type { Token } from "../lib/tokens";
 
 interface TokenSelectionViewProps {
@@ -18,14 +17,6 @@ export default function TokenSelectionView({
   console.log("tokens", tokens);
   return (
     <div className="w-full">
-      <div className="relative mb-4">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
-        <Input
-          type="text"
-          placeholder="Search for a token..."
-          className="pl-9 bg-white border-gray-200 focus:ring-purple-500 focus:border-purple-500"
-        />
-      </div>
       {isLoading ? (
         <div className="flex justify-center items-center h-32">
           <p className="text-gray-500">Loading tokens...</p>
@@ -38,22 +29,25 @@ export default function TokenSelectionView({
               onClick={() => onSelectToken(token)}
               className="relative group bg-white p-4 rounded-xl border border-gray-200 hover:border-purple-300 cursor-pointer transition-all duration-200 shadow-sm hover:shadow-lg"
             >
-              <div className="flex items-center gap-4">
+              <div className="flex items-start gap-4">
                 <img
                   src={token.icon}
                   alt={token.name}
-                  className="w-10 h-10 rounded-full bg-gray-100"
+                  className="w-10 h-10 rounded-full bg-gray-100 mt-1"
                 />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center">
-                    <h3 className="font-bold text-gray-900">{token.symbol}</h3>
-                    <p className="text-xs font-medium text-gray-500 uppercase">
+                    <h3 className="font-bold text-gray-900 truncate">
                       {token.name}
+                    </h3>
+                    <p className="text-xs font-medium text-gray-500 uppercase ml-2 flex-shrink-0">
+                      {token.symbol}
                     </p>
                   </div>
-                  <div className="flex items-center gap-1 mt-1 text-sm">
+
+                  <div className="flex items-center gap-1 mt-1 text-sm font-semibold text-gray-800">
                     <DollarSign className="w-3 h-3 text-green-600" />
-                    {token.currentPriceUsd.toFixed(2)}
+                    {(token.currentPriceUsd ?? 0).toFixed(2)}
                   </div>
                 </div>
               </div>

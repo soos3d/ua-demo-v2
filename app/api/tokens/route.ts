@@ -12,6 +12,8 @@ const getBlockchainFromTokenId = (id: string) => {
       return "Ethereum";
     case "btc":
       return "Bitcoin";
+    case "bnb":
+      return "BinanceSmartChain";
     default:
       return null;
   }
@@ -57,6 +59,7 @@ export async function GET() {
           return {
             ...token,
             currentPriceUsd: data.Price,
+            description: `Swap for ${token.name} on multiple chains`,
           };
         } catch (error) {
           console.error(`Error fetching price for ${token.name}:`, error);
