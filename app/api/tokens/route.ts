@@ -23,6 +23,36 @@ export async function GET() {
   try {
     const updatedTokens = await Promise.all(
       dummyTokens.map(async (token) => {
+        if (token.id === "parti") {
+          try {
+            const apiUrl = `https://deep-index.moralis.io/api/v2.2/erc20/0x59264f02D301281f3393e1385c0aEFd446Eb0F00/price?chain=bsc&include=percent_change`;
+            const response = await fetch(apiUrl, {
+              headers: {
+                accept: "application/json",
+                "X-API-Key": process.env.NEXT_PUBLIC_MORALIS_API_KEY!,
+              },
+              next: { revalidate: 300 }, // Revalidate every 5 minutes
+            });
+
+            if (!response.ok) {
+              console.warn(
+                `Failed to fetch price for ${token.name}: ${response.statusText}`
+              );
+              return token;
+            }
+
+            const data = await response.json();
+            return {
+              ...token,
+              currentPriceUsd: data.usdPrice,
+              description: `Swap for ${token.name} on multiple chains`,
+            };
+          } catch (error) {
+            console.error(`Error fetching price for ${token.name}:`, error);
+            return token;
+          }
+        }
+
         const blockchain = getBlockchainFromTokenId(token.id);
         if (!blockchain) {
           return token; // Return original token if no blockchain mapping

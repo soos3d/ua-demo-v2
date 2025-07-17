@@ -47,7 +47,7 @@ export default function TokenSelectionView({
 
                   <div className="flex items-center gap-1 mt-1 text-sm font-semibold text-gray-800">
                     <DollarSign className="w-3 h-3 text-green-600" />
-                    {(token.currentPriceUsd ?? 0).toFixed(2)}
+                    {(token.currentPriceUsd ?? 0).toFixed(6)}
                   </div>
                 </div>
               </div>

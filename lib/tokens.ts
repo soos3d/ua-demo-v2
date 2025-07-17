@@ -8,6 +8,11 @@ export interface Token {
   }
   
   export const dummyTokens: Token[] = [
+   { id: "parti",
+    name: "Parti Token",
+    symbol: "PARTI",
+    icon: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fparti-token-200.png&w=96&q=75",
+  },
     {
       id: "usdt",
       name: "Tether",

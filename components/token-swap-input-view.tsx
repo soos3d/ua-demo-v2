@@ -17,9 +17,10 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import type { Token } from "@/lib/tokens";
 import { supportedChains } from "@/lib/chains"; // Corrected import as per your instruction
 import { useWallets, useAccount } from "@particle-network/connectkit";
-import type {
-  UniversalAccount,
-  SUPPORTED_TOKEN_TYPE,
+import {
+  CHAIN_ID,
+  type UniversalAccount,
+  type SUPPORTED_TOKEN_TYPE,
 } from "@particle-network/universal-account-sdk";
 
 // Define Chain type based on supportedChains structure
@@ -78,6 +79,8 @@ export default function TokenSwapInputView({
         );
       case "BNB":
         return supportedChains.filter((chain) => chain.name === "BNB Chain");
+      case "PARTI":
+        return supportedChains.filter((chain) => chain.name === "BNB Chain");
       default:
         return supportedChains;
     }
@@ -125,13 +128,24 @@ export default function TokenSwapInputView({
     );
 
     try {
-      const transaction = await universalAccount.createConvertTransaction({
-        expectToken: {
-          type: token.id as SUPPORTED_TOKEN_TYPE,
-          amount: tokenAmount,
-        },
-        chainId: selectedChain.chainId,
-      });
+      let transaction;
+      if (token.symbol === "PARTI") {
+        transaction = await universalAccount.createBuyTransaction({
+          token: {
+            chainId: CHAIN_ID.BSC_MAINNET,
+            address: "0x59264f02D301281f3393e1385c0aEFd446Eb0F00", // PARTI token on BSC
+          },
+          amountInUSD: usdAmount,
+        });
+      } else {
+        transaction = await universalAccount.createConvertTransaction({
+          expectToken: {
+            type: token.id as SUPPORTED_TOKEN_TYPE,
+            amount: tokenAmount,
+          },
+          chainId: selectedChain.chainId,
+        });
+      }
       console.log("Transaction created:", transaction);
 
       // Sign the transaction's root hash using connected wallet
@@ -193,7 +207,7 @@ export default function TokenSwapInputView({
             <p className="text-sm text-gray-600">Current Price</p>
             <div className="flex items-center gap-1 text-base font-bold text-gray-900">
               <DollarSign className="w-3 h-3 text-green-600" />
-              {(token.currentPriceUsd ?? 0).toFixed(2)} USD
+              {(token.currentPriceUsd ?? 0).toFixed(6)} USD
             </div>
           </div>
           <div className="flex items-center justify-between">
