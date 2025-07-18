@@ -211,7 +211,7 @@ export default function TokenSwapInputView({
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-gray-600">Your Balance</p>
+            <p className="text-sm text-gray-600">Your Spendable Balance</p>
             <div className="flex items-center gap-1 text-base font-bold text-gray-900">
               <Wallet className="w-3 h-3 text-purple-600" />
               {primaryBalanceUsd.toFixed(2)} USD

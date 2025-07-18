@@ -19,6 +19,8 @@ interface AssetsDialogProps {
   primaryAssets?: {
     assets: Asset[];
   };
+  tokenBalance: string | null;
+  partiTokenValue: number;
 }
 
 const getTokenIcon = (tokenType: string) => {
@@ -28,6 +30,7 @@ const getTokenIcon = (tokenType: string) => {
     ETH: "https://imgs.search.brave.com/PNOo568ygD9SRI_1SyGxZn3jKt8VmcfHA2WRxI_ZIrE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pY29u/cy5pY29uYXJjaGl2/ZS5jb20vaWNvbnMv/Y2pkb3duZXIvY3J5/cHRvY3VycmVuY3kt/ZmxhdC81MTIvRXRo/ZXJldW0tRVRILWlj/b24ucG5n",
     SOL: "https://imgs.search.brave.com/KaYJiw36W6f27WtnKzk_95j74lW0TP5nmvYN7h8kkjo/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWFn/ZXMuc2Vla2xvZ28u/Y29tL2xvZ28tcG5n/LzQyLzIvc29sYW5h/LXNvbC1sb2dvLXBu/Z19zZWVrbG9nby00/MjMwOTUucG5n",
     BTC: "https://imgs.search.brave.com/_Uh3OOTskflR3kSwaZYKFluj25abSbsSc-Ih1VoxaDk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9jZG4t/aWNvbnMtcG5nLmZy/ZWVwaWsuY29tLzI1/Ni81OTY4LzU5Njgy/NjAucG5nP3NlbXQ9/YWlzX2h5YnJpZA",
+    PARTI: "https://universalx.app/_next/image?url=https%3A%2F%2Fstatic.particle.network%2Fparti-token-200.png&w=96&q=75",
   };
 
   return iconMap[tokenType.toUpperCase()] || "https://via.placeholder.com/40";
@@ -37,13 +40,15 @@ export default function AssetsDialog({
   showAssetsDialog,
   setShowAssetsDialog,
   primaryAssets,
+  tokenBalance,
+  partiTokenValue,
 }: AssetsDialogProps) {
   const filteredAssets =
     primaryAssets?.assets?.filter((asset) => asset.amountInUSD > 0) || [];
   const totalValue = filteredAssets.reduce(
     (sum, asset) => sum + asset.amountInUSD,
     0
-  );
+  ) + partiTokenValue;
 
   return (
     <Dialog open={showAssetsDialog} onOpenChange={setShowAssetsDialog}>
@@ -75,6 +80,50 @@ export default function AssetsDialog({
         </DialogHeader>
 
         <div className="space-y-2 max-h-[350px] overflow-y-auto">
+          {tokenBalance && partiTokenValue > 0 && (
+            <div
+              key="PARTI"
+              className="group relative bg-white rounded-xl border border-purple-100 p-3 shadow-sm hover:shadow-md hover:border-purple-200 transition-all duration-200"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  {/* Token Icon */}
+                  <div className="w-12 h-12 rounded-full overflow-hidden bg-white border border-gray-200 shadow-md flex items-center justify-center">
+                    <img
+                      src={getTokenIcon('PARTI')}
+                      alt="PARTI"
+                      className="w-10 h-10 object-contain"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-bold text-gray-900 text-base uppercase tracking-wide">
+                        PARTI
+                      </h3>
+                    </div>
+                    <p className="text-xs text-gray-500 font-medium">
+                      {parseFloat(tokenBalance).toFixed(4)} tokens
+                    </p>
+                  </div>
+                </div>
+
+                <div className="text-right">
+                  <div className="flex items-center gap-1 text-base font-bold text-gray-900">
+                    <DollarSign className="w-3 h-3 text-green-600" />
+                    {partiTokenValue.toFixed(2)}
+                  </div>
+                  <div className="flex items-center justify-end gap-1 text-xs text-gray-500">
+                    <Receipt className="w-3 h-3 text-green-600" />
+                    {(partiTokenValue / parseFloat(tokenBalance)).toFixed(4)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Hover effect gradient border */}
+              <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500 to-purple-600 opacity-0 group-hover:opacity-10 transition-opacity duration-200 pointer-events-none" />
+            </div>
+          )}
           {filteredAssets.map((asset) => (
             <div
               key={asset.tokenType}
@@ -120,7 +169,7 @@ export default function AssetsDialog({
             </div>
           ))}
 
-          {filteredAssets.length === 0 && (
+          {filteredAssets.length === 0 && !tokenBalance && (
             <div className="text-center py-8">
               <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-4">
                 <Coins className="w-8 h-8 text-gray-400" />

@@ -12,6 +12,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { ethers } from "ethers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -64,6 +65,8 @@ export default function Demo() {
   const [primaryAssets, setPrimaryAssets] = useState<IAssetsResponse | null>(
     null
   );
+  const [tokenBalance, setTokenBalance] = useState<string | null>(null);
+  const [partiTokenValue, setPartiTokenValue] = useState<number>(0);
 
   // Instantiate UA
   useEffect(() => {
@@ -110,8 +113,57 @@ export default function Demo() {
     primaryWallet?.connector?.walletConnectorType,
   ]);
 
+  // Fetch token balance when accountInfo is available
+  useEffect(() => {
+    const fetchTokenBalance = async (uaAddress: string) => {
+      try {
+        const provider = new ethers.JsonRpcProvider(
+          "https://binance.llamarpc.com"
+        );
+        const tokenAddress = "0x59264f02D301281f3393e1385c0aEFd446Eb0F00";
+        const abi = ["function balanceOf(address) view returns (uint256)"];
+        const contract = new ethers.Contract(tokenAddress, abi, provider);
+        const balance = await contract.balanceOf(uaAddress);
+        console.log("Token balance:", balance);
+        setTokenBalance(ethers.formatUnits(balance, 18)); // Assuming 18 decimals
+      } catch (error) {
+        console.error("Error fetching token balance:", error);
+      }
+    };
+
+    if (accountInfo?.evmUaAddress) {
+      fetchTokenBalance(accountInfo.evmUaAddress);
+    }
+  }, [accountInfo]);
+
+  // Fetch PARTI token price and calculate value
+  useEffect(() => {
+    if (tokenBalance) {
+      const fetchPartiPriceAndCalculateValue = async () => {
+        try {
+          const response = await fetch("/api/tokens");
+          const tokens = await response.json();
+          const partiToken = tokens.find((token: any) => token.id === "parti");
+          if (partiToken && partiToken.currentPriceUsd) {
+            const balance = parseFloat(tokenBalance);
+            const value = balance * partiToken.currentPriceUsd;
+            setPartiTokenValue(value);
+          }
+        } catch (error) {
+          console.error(
+            "Error fetching token price or calculating value:",
+            error
+          );
+        }
+      };
+
+      fetchPartiPriceAndCalculateValue();
+    }
+  }, [tokenBalance]);
+
   const assetCount =
-    primaryAssets?.assets?.filter((asset) => asset.amountInUSD > 0).length ?? 0;
+    (primaryAssets?.assets?.filter((asset) => asset.amountInUSD > 0).length ?? 0) +
+    (tokenBalance && parseFloat(tokenBalance) > 0 ? 1 : 0);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -199,7 +251,9 @@ export default function Demo() {
 
               <div className="text-4xl font-bold tracking-tight text-white">
                 {showBalance
-                  ? primaryAssets?.totalAmountInUSD.toFixed(3)
+                  ? (
+                      (primaryAssets?.totalAmountInUSD ?? 0) + partiTokenValue
+                    ).toFixed(3)
                   : "••••••"}
               </div>
             </div>
@@ -222,8 +276,9 @@ export default function Demo() {
                   </div>
                 </div>
                 <div>
-                  <div className="font-semibold text-gray-900">Assets</div>
-                  <div className="text-sm text-gray-500">View portfolio</div>
+                  <div className="font-semibold text-gray-900">
+                    View portfolio
+                  </div>
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-gray-400" />
@@ -278,6 +333,8 @@ export default function Demo() {
         showAssetsDialog={showAssetsDialog}
         setShowAssetsDialog={setShowAssetsDialog}
         primaryAssets={primaryAssets!}
+        tokenBalance={tokenBalance}
+        partiTokenValue={partiTokenValue}
       />
       {accountInfo && (
         <DepositDialog
